@@ -16,6 +16,7 @@ import {
     ApiCreatedResponse,
     ApiForbiddenResponse,
     ApiNoContentResponse,
+    ApiNotFoundResponse,
     ApiOkResponse,
     ApiOperation,
     ApiTags,
@@ -94,8 +95,12 @@ export class PatientsController {
     @ApiUnauthorizedResponse({
         description: 'Unauthorized',
     })
+    @ApiNotFoundResponse({
+        description: 'Not found doctor',
+    })
     @ApiForbiddenResponse({
-        description: 'Forbidden',
+        description:
+            'You do not have enough permissions or your time is not available',
     })
     @HttpCode(HttpStatus.CREATED)
     makeAppointment(@Body() appointmentInputDto: AppointmentInputDto) {}
@@ -113,8 +118,11 @@ export class PatientsController {
     @ApiUnauthorizedResponse({
         description: 'Unauthorized',
     })
+    @ApiNotFoundResponse({
+        description: 'Not found appointment',
+    })
     @ApiForbiddenResponse({
-        description: 'Forbidden',
+        description: 'You do not have enough permissions',
     })
     @HttpCode(HttpStatus.NO_CONTENT)
     removeAppointment(@Param('appointmentId') appointmentId: string) {}
@@ -132,8 +140,12 @@ export class PatientsController {
     @ApiUnauthorizedResponse({
         description: 'Unauthorized',
     })
+    @ApiNotFoundResponse({
+        description: 'Not found appointment or doctor ',
+    })
     @ApiForbiddenResponse({
-        description: 'Forbidden',
+        description:
+            'You do not have enough permissions or your date is not available',
     })
     @HttpCode(HttpStatus.NO_CONTENT)
     updateAppointment(
