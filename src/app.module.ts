@@ -4,6 +4,7 @@ import { ConfigModule } from '@nestjs/config';
 import configuration, { validate } from './settings/env/configuration';
 import { PatientsModule } from './features/patients/patients.module';
 import { DoctorsModule } from './features/doctors/doctors.module';
+import { AdministratorsModule } from './features/administrators/administrators.module';
 
 @Global()
 @Module({
@@ -17,6 +18,7 @@ import { DoctorsModule } from './features/doctors/doctors.module';
         }),
         PatientsModule,
         DoctorsModule,
+        AdministratorsModule,
         ConfigModule.forRoot({
             isGlobal: true,
             load: [configuration],
