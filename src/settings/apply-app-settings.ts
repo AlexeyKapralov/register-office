@@ -17,6 +17,26 @@ export const applyAppSettings = (app: NestExpressApplication) => {
         .setDescription('The register office API description')
         .setVersion('1.0')
         .addTag('Register office')
+        .addBearerAuth(
+            {
+                type: 'http',
+                scheme: 'bearer',
+                bearerFormat: 'JWT',
+                name: 'Authorization',
+                in: 'header',
+            },
+            'Authorization Token',
+        )
+        .addBearerAuth(
+            {
+                type: 'http',
+                scheme: 'bearer',
+                bearerFormat: 'JWT',
+                name: 'Authorization',
+                in: 'cookie',
+            },
+            'Refresh Token',
+        )
         .build();
 
     const document = SwaggerModule.createDocument(app, config);
