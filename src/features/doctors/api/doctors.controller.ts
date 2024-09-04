@@ -24,7 +24,7 @@ import { DoctorsViewDto } from './dto/output/doctors-view-dto';
 import { SchedulePeriodByDateInputDto } from './dto/input/schedule-period-by-date-input.dto';
 import { AppointmentsDateInputDto } from './dto/input/appointments-date-input.dto';
 import { ScheduleViewDto } from './dto/output/shedule-view.dto';
-import { AppointmentViewDto } from './dto/output/appointment-view.dto';
+import { AppointmentDoctorsViewDto } from './dto/output/appointment-doctors-view.dto';
 import { DeleteScheduleInputDto } from './dto/input/delete-schedule-input.dto';
 
 @ApiTags('Doctors')
@@ -35,7 +35,7 @@ export class DoctorsController {
     @Get('/free-slots/:doctorId')
     @ApiNoContentResponse({
         description: 'Info about doctor and free slots',
-        type: AppointmentViewDto,
+        type: AppointmentDoctorsViewDto,
     })
     @ApiBadRequestResponse({
         type: ApiErrorResult,
@@ -131,7 +131,7 @@ export class DoctorsController {
     @Get('appointments')
     @ApiOkResponse({
         description: `Doctor's appointments`,
-        type: [AppointmentViewDto],
+        type: [AppointmentDoctorsViewDto],
     })
     @ApiBadRequestResponse({
         type: ApiErrorResult,

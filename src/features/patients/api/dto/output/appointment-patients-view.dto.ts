@@ -1,7 +1,7 @@
-import { PatientViewDto } from '../../../../patients/api/dto/output/patient-view.dto';
 import { ApiProperty } from '@nestjs/swagger';
+import { DoctorsViewDto } from '../../../../doctors/api/dto/output/doctors-view-dto';
 
-export class AppointmentViewDto {
+export class AppointmentPatientsViewDto {
     @ApiProperty({
         default: '550e8400-e29b-41d4-a716-446655440000',
     })
@@ -11,7 +11,7 @@ export class AppointmentViewDto {
     })
     datetimeOfAdmission: string;
     @ApiProperty()
-    patient: PatientViewDto;
+    doctor: DoctorsViewDto;
     @ApiProperty({
         default: '2024-09-04T05:17:00.212Z',
     })

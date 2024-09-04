@@ -3,10 +3,13 @@ import { IsDate } from 'class-validator';
 import { Transform, TransformFnParams } from 'class-transformer';
 
 export class AppointmentsDateInputDto {
-    @ApiProperty()
+    @ApiProperty({ example: '2024-09-04T08:00:00.000Z' })
     @Transform(({ value }: TransformFnParams) => new Date(String(value)))
     @IsDate()
-    appointmentDate: Date;
-    @ApiProperty({ enum: ['week', 'month', 'day'] })
-    type: 'week' | 'month' | 'day';
+    startDate: Date;
+
+    @ApiProperty({ example: '2024-09-04T18:30:00.000Z' })
+    @Transform(({ value }: TransformFnParams) => new Date(String(value)))
+    @IsDate()
+    finishDate: Date;
 }
