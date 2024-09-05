@@ -5,6 +5,7 @@ import configuration, { validate } from './settings/env/configuration';
 import { PatientsModule } from './features/patients/patients.module';
 import { DoctorsModule } from './features/doctors/doctors.module';
 import { AdministratorsModule } from './features/administrators/administrators.module';
+import { DatabaseModule } from './database/database.module';
 
 @Global()
 @Module({
@@ -19,6 +20,7 @@ import { AdministratorsModule } from './features/administrators/administrators.m
         PatientsModule,
         DoctorsModule,
         AdministratorsModule,
+        DatabaseModule,
         ConfigModule.forRoot({
             isGlobal: true,
             load: [configuration],
