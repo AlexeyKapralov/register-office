@@ -22,10 +22,17 @@ import {
 } from '@nestjs/swagger';
 import { ApiErrorResult } from '../../../base/models/api-error-result';
 import { DoctorInputDto } from '../../doctors/api/dto/input/doctor-input.dto';
+import { AdministratorsService } from '../application/administrators.service';
+import { Logger } from 'nestjs-pino';
 
 @ApiTags('Administrators')
 @Controller('administrators')
 export class AdministratorsController {
+    constructor(
+        private readonly administratorsService: AdministratorsService,
+        private readonly logger: Logger,
+    ) {}
+
     @ApiOperation({ summary: 'Create a doctor' })
     @ApiBearerAuth('Authorization Token')
     @Post('doctor')
@@ -43,7 +50,11 @@ export class AdministratorsController {
         description: 'Doctor already exists',
     })
     @HttpCode(HttpStatus.CREATED)
-    createDoctor(@Body() doctorInputDto: DoctorInputDto) {}
+    async createDoctor(@Body() doctorInputDto: DoctorInputDto) {
+        const user =
+            await this.administratorsService.createUser(doctorInputDto);
+        return user;
+    }
 
     @ApiOperation({ summary: 'Delete the doctor' })
     @ApiBearerAuth('Authorization Token')
