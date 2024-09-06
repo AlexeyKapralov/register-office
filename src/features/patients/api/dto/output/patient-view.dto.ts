@@ -8,9 +8,9 @@ export class PatientViewDto {
     @ApiProperty()
     city: string;
     @ApiProperty()
-    medical_policy: string;
+    medicalPolicy: string;
     @ApiProperty()
     passport: string;
     @ApiProperty()
-    phone_number: string;
+    phonNumber: string;
 }

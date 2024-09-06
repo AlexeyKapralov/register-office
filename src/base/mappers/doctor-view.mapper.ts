@@ -7,7 +7,7 @@ export const doctorViewMapper = (doctor: DoctorsModel): DoctorsViewDto => {
         name: `${doctor.firstname} ${doctor.lastname}`,
         region: doctor.region,
         city: doctor.city,
-        phone_number: doctor.phone_number,
+        phoneNumber: doctor.phoneNumber,
         specialization: doctor.specialization,
         dob: doctor.dob,
     };

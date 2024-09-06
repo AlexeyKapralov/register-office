@@ -5,7 +5,9 @@ import {
     ForbiddenException,
     HttpCode,
     HttpStatus,
+    NotFoundException,
     Param,
+    ParseUUIDPipe,
     Post,
     Put,
 } from '@nestjs/common';
@@ -25,6 +27,7 @@ import { DoctorInputDto } from '../../doctors/api/dto/input/doctor-input.dto';
 import { AdministratorsService } from '../application/administrators.service';
 import { Logger } from 'nestjs-pino';
 import { DoctorsViewDto } from '../../doctors/api/dto/output/doctors-view-dto';
+import { DoctorInputUpdateDto } from '../../doctors/api/dto/input/doctor-input-update.dto';
 
 @ApiTags('Administrators')
 @Controller('administrators')
@@ -83,7 +86,13 @@ export class AdministratorsController {
         description: 'You do not have enough permissions',
     })
     @HttpCode(HttpStatus.NO_CONTENT)
-    removeDoctor(@Param('doctorId') doctorId: string) {}
+    async removeDoctor(@Param('doctorId', ParseUUIDPipe) doctorId: string) {
+        const removeDoctorInterlayer =
+            await this.administratorsService.removeDoctor(doctorId);
+        if (removeDoctorInterlayer.hasError()) {
+            throw new NotFoundException();
+        }
+    }
 
     @ApiOperation({ summary: 'Update the doctor' })
     @ApiBearerAuth('Authorization Token')
@@ -105,8 +114,17 @@ export class AdministratorsController {
         description: 'You do not have enough permissions',
     })
     @HttpCode(HttpStatus.NO_CONTENT)
-    updateDoctor(
+    async updateDoctor(
         @Param('doctorId') doctorId: string,
-        @Body() doctorInputDto: DoctorInputDto,
-    ) {}
+        @Body() doctorInputDto: DoctorInputUpdateDto,
+    ) {
+        const updateDoctorInterLayer =
+            await this.administratorsService.updateDoctor(
+                doctorId,
+                doctorInputDto,
+            );
+        if (updateDoctorInterLayer.hasError()) {
+            throw new ForbiddenException();
+        }
+    }
 }

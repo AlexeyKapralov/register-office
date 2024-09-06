@@ -14,7 +14,7 @@ export class DoctorsViewDto {
     city: string;
 
     @ApiProperty()
-    phone_number: string;
+    phoneNumber: string;
 
     @ApiProperty()
     specialization: string;

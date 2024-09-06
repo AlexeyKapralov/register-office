@@ -1,30 +1,141 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { ModelClass } from 'objection';
-import { DoctorInputDto } from '../../doctors/api/dto/input/doctor-input.dto';
+import { ModelClass, transaction } from 'objection';
+import { UsersModel } from '../../../database/models/users.model';
 import { DoctorsModel } from '../../../database/models/doctors.model';
 import { RolesModel } from '../../../database/models/roles.model';
+import { UsersService } from '../../users/application/users.service';
+import { DoctorsService } from '../../doctors/application/doctors.service';
+import { DoctorsRepository } from '../../doctors/infrastructure/doctors.repository';
+import { Knex } from 'knex';
+import { InjectConnection } from 'nest-knexjs';
+import { Role } from '../../../base/models/role.enum';
+import { DoctorInputDto } from '../../doctors/api/dto/input/doctor-input.dto';
+import { InterlayerNotice } from '../../../base/models/interlayer';
+import { DoctorsViewDto } from '../../doctors/api/dto/output/doctors-view-dto';
+import { DoctorInputUpdateDto } from '../../doctors/api/dto/input/doctor-input-update.dto';
+import { Logger } from 'nestjs-pino';
 
 @Injectable()
 export class AdministratorsRepository {
     constructor(
-        @Inject('DoctorsModel')
-        private readonly doctorsModel: ModelClass<DoctorsModel>,
-        @Inject('RolesModel')
-        private readonly rolesModel: ModelClass<RolesModel>,
+        @Inject('UsersModel') private usersModel: ModelClass<UsersModel>,
+        @Inject('DoctorsModel') private doctorsModel: ModelClass<DoctorsModel>,
+        private readonly usersService: UsersService,
+        private readonly doctorsService: DoctorsService,
+        @Inject('KnexConnection') private readonly knex: Knex,
+        private readonly logger: Logger,
     ) {}
 
-    async createDoctor(doctorInputDto: DoctorInputDto, userId: string) {
-        const doctor = await this.doctorsModel.query().insert({
-            userId: userId,
-            city: doctorInputDto.city,
-            dob: doctorInputDto.dob,
-            region: doctorInputDto.region,
-            specialization: doctorInputDto.specialization,
-            firstname: doctorInputDto.firstName,
-            lastname: doctorInputDto.lastName,
-            phone_number: doctorInputDto.phoneNumber,
-        });
+    async removeDoctor(userId: string, doctorId: string): Promise<boolean> {
+        const trx = await this.knex.transaction();
+        try {
+            const isDoctorDeleteInterlayer =
+                await this.doctorsService.deleteDoctor(doctorId, trx);
+            if (isDoctorDeleteInterlayer.hasError()) {
+                trx.rollback();
+                return false;
+            }
 
-        return doctor;
+            const isUserDeleteInterlayer = await this.usersService.deleteUser(
+                userId,
+                trx,
+            );
+            if (isUserDeleteInterlayer.hasError()) {
+                trx.rollback();
+                return false;
+            }
+
+            await trx.commit();
+            return true;
+        } catch (error) {
+            await trx.rollback();
+            return false;
+        }
+    }
+
+    async createDoctor(
+        doctorInputDto: DoctorInputDto,
+        passwordHash: string,
+    ): Promise<DoctorsViewDto | null> {
+        const trx = await this.knex.transaction();
+        try {
+            const userInterlayer = await this.usersService.createUser(
+                passwordHash,
+                doctorInputDto.login,
+                doctorInputDto.email,
+                Role.Doctor,
+                trx,
+            );
+            if (userInterlayer.hasError()) {
+                trx.rollback();
+                return null;
+            }
+
+            const doctorInterlayer = await this.doctorsService.createDoctor(
+                doctorInputDto,
+                userInterlayer.data.id,
+                trx,
+            );
+            if (doctorInterlayer.hasError()) {
+                trx.rollback();
+                return null;
+            }
+
+            await trx.commit();
+            return doctorInterlayer.data;
+        } catch (error) {
+            await trx.rollback();
+            return null;
+        }
+    }
+
+    async updateDoctor(
+        doctorInputUpdateDto: DoctorInputUpdateDto,
+        passwordHash: string,
+        userId: string,
+        doctorId: string,
+    ): Promise<boolean> {
+        const trx = await this.knex.transaction();
+        try {
+            const updateUserInterlayer = await this.usersService.updateUser(
+                userId,
+                doctorInputUpdateDto.login,
+                doctorInputUpdateDto.email,
+                passwordHash,
+                trx,
+            );
+            this.logger.log('updateDoctorInterlayer', {
+                updateDoctorInterlayer: updateUserInterlayer,
+            });
+            if (updateUserInterlayer.hasError()) {
+                trx.rollback();
+                return false;
+            }
+            const updateDoctorInterlayer =
+                await this.doctorsService.updateDoctor(
+                    doctorId,
+                    doctorInputUpdateDto.firstName,
+                    doctorInputUpdateDto.lastName,
+                    doctorInputUpdateDto.region,
+                    doctorInputUpdateDto.city,
+                    doctorInputUpdateDto.phoneNumber,
+                    doctorInputUpdateDto.specialization,
+                    doctorInputUpdateDto.dob,
+                    trx,
+                );
+            this.logger.log('updateDoctorInterlayer', {
+                updateDoctorInterlayer: updateDoctorInterlayer,
+            });
+            if (updateDoctorInterlayer.hasError()) {
+                trx.rollback();
+                return false;
+            }
+
+            await trx.commit();
+            return true;
+        } catch (error) {
+            await trx.rollback();
+            return false;
+        }
     }
 }

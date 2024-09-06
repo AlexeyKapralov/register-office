@@ -10,9 +10,10 @@ export class DoctorsModel extends BaseModel {
     lastname: string;
     region: string;
     city: string;
-    phone_number: string;
+    phoneNumber: string;
     specialization: string;
     dob: Date;
+    deletedAt: Date;
 
     user: UsersModel;
 
