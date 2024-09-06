@@ -2,7 +2,7 @@ import {
     Body,
     Controller,
     Delete,
-    Get,
+    ForbiddenException,
     HttpCode,
     HttpStatus,
     Param,
@@ -24,6 +24,7 @@ import { ApiErrorResult } from '../../../base/models/api-error-result';
 import { DoctorInputDto } from '../../doctors/api/dto/input/doctor-input.dto';
 import { AdministratorsService } from '../application/administrators.service';
 import { Logger } from 'nestjs-pino';
+import { DoctorsViewDto } from '../../doctors/api/dto/output/doctors-view-dto';
 
 @ApiTags('Administrators')
 @Controller('administrators')
@@ -38,6 +39,7 @@ export class AdministratorsController {
     @Post('doctor')
     @ApiCreatedResponse({
         description: 'The doctor was created',
+        type: DoctorsViewDto,
     })
     @ApiBadRequestResponse({
         type: ApiErrorResult,
@@ -51,9 +53,14 @@ export class AdministratorsController {
     })
     @HttpCode(HttpStatus.CREATED)
     async createDoctor(@Body() doctorInputDto: DoctorInputDto) {
-        const user =
-            await this.administratorsService.createUser(doctorInputDto);
-        return user;
+        const doctorInterlayer =
+            await this.administratorsService.createDoctor(doctorInputDto);
+        if (doctorInterlayer.hasError()) {
+            throw new ForbiddenException({
+                message: 'login or email already exist',
+            });
+        }
+        return doctorInterlayer.data;
     }
 
     @ApiOperation({ summary: 'Delete the doctor' })

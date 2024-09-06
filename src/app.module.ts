@@ -6,6 +6,7 @@ import { PatientsModule } from './features/patients/patients.module';
 import { DoctorsModule } from './features/doctors/doctors.module';
 import { AdministratorsModule } from './features/administrators/administrators.module';
 import { DatabaseModule } from './database/database.module';
+import { UsersModule } from './features/users/user.module';
 
 @Global()
 @Module({
@@ -20,6 +21,7 @@ import { DatabaseModule } from './database/database.module';
         PatientsModule,
         DoctorsModule,
         AdministratorsModule,
+        UsersModule,
         DatabaseModule,
         ConfigModule.forRoot({
             isGlobal: true,
