@@ -19,7 +19,7 @@ export async function up(knex: Knex) {
             t.string('lastname').notNullable();
             t.string('region').notNullable();
             t.string('city').notNullable();
-            t.string('phone_number').notNullable();
+            t.string('phoneNumber').notNullable();
             t.string('specialization').notNullable();
             t.datetime('dob', { useTz: false }).notNullable();
         });
