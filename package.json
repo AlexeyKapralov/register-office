@@ -19,7 +19,7 @@
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "set ENV=TESTING&& jest --config ./test/jest-e2e.json",
     "knex": "knex --knexfile knexfile.ts",
-    "migrate": "yarn knex migrate:latest",
+    "migrate:run": "yarn knex migrate:latest",
     "migrate:revert": "yarn knex migrate:rollback",
     "migrate:make": "yarn knex migrate:make -- -x ts",
     "docker-compose:run": "docker compose up"
