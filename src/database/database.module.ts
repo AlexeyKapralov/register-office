@@ -3,8 +3,10 @@ import { knexSnakeCaseMappers, Model } from 'objection';
 import Knex from 'knex';
 import { UsersModel } from './models/users.model';
 import 'dotenv/config';
+import { DoctorsModel } from './models/doctors.model';
+import { RolesModel } from './models/roles.model';
 
-const models = [UsersModel];
+const models = [UsersModel, DoctorsModel, RolesModel];
 
 const modelProviders = models.map((model) => {
     return {
