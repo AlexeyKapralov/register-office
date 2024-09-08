@@ -1,16 +1,12 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { ModelClass, transaction } from 'objection';
+import { ModelClass } from 'objection';
 import { UsersModel } from '../../../database/models/users.model';
 import { DoctorsModel } from '../../../database/models/doctors.model';
-import { RolesModel } from '../../../database/models/roles.model';
 import { UsersService } from '../../users/application/users.service';
 import { DoctorsService } from '../../doctors/application/doctors.service';
-import { DoctorsRepository } from '../../doctors/infrastructure/doctors.repository';
 import { Knex } from 'knex';
-import { InjectConnection } from 'nest-knexjs';
 import { Role } from '../../../base/models/role.enum';
 import { DoctorInputDto } from '../../doctors/api/dto/input/doctor-input.dto';
-import { InterlayerNotice } from '../../../base/models/interlayer';
 import { DoctorsViewDto } from '../../doctors/api/dto/output/doctors-view-dto';
 import { DoctorInputUpdateDto } from '../../doctors/api/dto/input/doctor-input-update.dto';
 import { Logger } from 'nestjs-pino';

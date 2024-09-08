@@ -6,4 +6,12 @@ export class ApiSettings {
 
     @IsString()
     PORT = this.environmentVariable.PORT;
+    @Matches('\\d+(?: days|m|s)')
+    ACCESS_TOKEN_EXPIRATION_LIVE =
+        this.environmentVariable.ACCESS_TOKEN_EXPIRATION_LIVE;
+    @Matches('\\d+(?: days|m|s)')
+    REFRESH_TOKEN_EXPIRATION_LIVE =
+        this.environmentVariable.REFRESH_TOKEN_EXPIRATION_LIVE;
+    @IsString()
+    SECRET = this.environmentVariable.SECRET;
 }

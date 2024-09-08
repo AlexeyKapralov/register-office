@@ -41,6 +41,15 @@ export class UsersRepository {
         return user;
     }
 
+    async findUserRole(roleId: string): Promise<string | null> {
+        const role = await this.rolesModel
+            .query()
+            .findOne({ id: roleId })
+            .select('roleTitle');
+
+        return role.roleTitle;
+    }
+
     async updateUser(
         userId: string,
         login: string = null,

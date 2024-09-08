@@ -41,12 +41,55 @@ export class UsersService {
         return notice;
     }
 
+    async findUserRole(roleId: string): Promise<InterlayerNotice<string>> {
+        const notice = new InterlayerNotice<string | null>();
+
+        const role = await this.usersRepository.findUserRole(roleId);
+
+        if (!role) {
+            notice.addError('role was not found');
+            return notice;
+        }
+        notice.addData(role);
+        return notice;
+    }
+
     async findUserById(
         userId: string,
     ): Promise<InterlayerNotice<UserViewDto | null>> {
         const notice = new InterlayerNotice<UserViewDto | null>();
 
         const user = await this.usersRepository.findUserById(userId);
+        if (user) {
+            notice.addError('user was not found');
+            return notice;
+        }
+
+        notice.addData(userViewMapper(user));
+        return notice;
+    }
+
+    async findUserByLogin(
+        login: string,
+    ): Promise<InterlayerNotice<UserViewDto | null>> {
+        const notice = new InterlayerNotice<UserViewDto | null>();
+
+        const user = await this.usersRepository.findUserByLogin(login);
+        if (user) {
+            notice.addError('user was not found');
+            return notice;
+        }
+
+        notice.addData(userViewMapper(user));
+        return notice;
+    }
+
+    async findUserByEmail(
+        email: string,
+    ): Promise<InterlayerNotice<UserViewDto | null>> {
+        const notice = new InterlayerNotice<UserViewDto | null>();
+
+        const user = await this.usersRepository.findUserByLogin(email);
         if (user) {
             notice.addError('user was not found');
             return notice;

@@ -10,6 +10,9 @@ import {
     ParseUUIDPipe,
     Post,
     Put,
+    Req,
+    UnauthorizedException,
+    UseGuards,
 } from '@nestjs/common';
 import {
     ApiBadRequestResponse,
@@ -28,6 +31,11 @@ import { AdministratorsService } from '../application/administrators.service';
 import { Logger } from 'nestjs-pino';
 import { DoctorsViewDto } from '../../doctors/api/dto/output/doctors-view-dto';
 import { DoctorInputUpdateDto } from '../../doctors/api/dto/input/doctor-input-update.dto';
+import { JwtAuthGuard } from '../../auth/guards/jwt-auth-guard';
+import { AccessTokenPayloadDto } from '../../../common/dto/access-token-payload.dto';
+import { Roles } from '../../../common/decorators/validate/roles.decorator';
+import { Role } from '../../../base/models/role.enum';
+import { RolesGuard } from '../../../base/guards/roles.guard';
 
 @ApiTags('Administrators')
 @Controller('administrators')
@@ -37,6 +45,8 @@ export class AdministratorsController {
         private readonly logger: Logger,
     ) {}
 
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Roles(Role.Administrator)
     @ApiOperation({ summary: 'Create a doctor' })
     @ApiBearerAuth('Authorization Token')
     @Post('doctor')
@@ -55,7 +65,15 @@ export class AdministratorsController {
         description: 'Doctor already exists',
     })
     @HttpCode(HttpStatus.CREATED)
-    async createDoctor(@Body() doctorInputDto: DoctorInputDto) {
+    async createDoctor(
+        @Body() doctorInputDto: DoctorInputDto,
+        @Req() req: any,
+    ) {
+        const accessTokenPayload: AccessTokenPayloadDto = req.user;
+        if (!accessTokenPayload.userId) {
+            throw new UnauthorizedException();
+        }
+
         const doctorInterlayer =
             await this.administratorsService.createDoctor(doctorInputDto);
         if (doctorInterlayer.hasError()) {
