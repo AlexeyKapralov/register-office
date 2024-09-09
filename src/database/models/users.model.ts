@@ -8,4 +8,5 @@ export class UsersModel extends BaseModel {
     password: string;
     roleId: string;
     createdAt: Date;
+    deletedAt: Date;
 }

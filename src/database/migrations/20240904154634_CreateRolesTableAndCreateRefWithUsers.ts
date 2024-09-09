@@ -1,6 +1,6 @@
 import { Knex } from 'knex';
 
-const tableName = 'users';
+const tableName = 'roles';
 
 export async function up(knex: Knex) {
     return knex.schema
@@ -10,11 +10,14 @@ export async function up(knex: Knex) {
             t.uuid('id', { primaryKey: true }).defaultTo(
                 knex.raw('uuid_generate_v4()'),
             );
-            t.string('login').notNullable();
-            t.string('email');
-            t.string('password').notNullable();
-            t.uuid('roleId').notNullable();
-            t.datetime('createdAt', { useTz: false }).notNullable();
+            t.string('role_title').notNullable();
+        })
+        .alterTable('users', (t) => {
+            t.uuid('role_id')
+                .nullable()
+                .references('id')
+                .inTable('roles')
+                .alter();
         });
 }
 
