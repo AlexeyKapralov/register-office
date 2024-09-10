@@ -11,7 +11,7 @@ export class LoginInputDto {
     loginOrEmail: string;
 
     @ApiProperty({
-        example: '123456@',
+        example: 'Quytaxmu@21',
     })
     @IsString()
     @Trim()

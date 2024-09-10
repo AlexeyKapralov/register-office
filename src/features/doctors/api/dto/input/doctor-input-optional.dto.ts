@@ -9,7 +9,7 @@ import {
 import { Transform, TransformFnParams } from 'class-transformer';
 import { Trim } from '../../../../../common/decorators/transform/trim.decorator';
 
-export class DoctorInputUpdateDto {
+export class DoctorInputOptionalDto {
     @ApiPropertyOptional({
         example: 'Alexey',
     })

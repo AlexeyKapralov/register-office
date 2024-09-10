@@ -3,12 +3,7 @@ import { IsDate } from 'class-validator';
 import { Transform, TransformFnParams } from 'class-transformer';
 import dayjs from 'dayjs';
 
-export class SchedulePeriodByDateInputDto {
-    @ApiProperty({ example: '2024-09-04T05:40:55.083Z' })
-    @Transform(({ value }: TransformFnParams) => new Date(String(value)))
-    @IsDate()
-    workDate: Date;
-
+export class SchedulePeriodInputDto {
     @ApiProperty({ example: '2024-09-04T08:00:00.000Z' })
     @Transform(({ value }: TransformFnParams) => new Date(String(value)))
     @IsDate()
