@@ -6,7 +6,7 @@ import { DoctorsViewDto } from '../../doctors/api/dto/output/doctors-view-dto';
 import { InterlayerNotice } from '../../../base/models/interlayer';
 import { UsersService } from '../../users/application/users.service';
 import { DoctorsService } from '../../doctors/application/doctors.service';
-import { DoctorInputUpdateDto } from '../../doctors/api/dto/input/doctor-input-update.dto';
+import { DoctorInputOptionalDto } from '../../doctors/api/dto/input/doctor-input-optional.dto';
 
 @Injectable()
 export class AdministratorsService {
@@ -41,7 +41,7 @@ export class AdministratorsService {
         const notice = new InterlayerNotice();
 
         const checkDoctorAndGetUserIdInterlayer =
-            await this.doctorsService.findUserIdByDoctorId(doctorId);
+            await this.doctorsService.getUserIdByDoctorId(doctorId);
         if (checkDoctorAndGetUserIdInterlayer.hasError()) {
             notice.addError(
                 checkDoctorAndGetUserIdInterlayer.extensions[0].message,
@@ -62,19 +62,19 @@ export class AdministratorsService {
 
     async updateDoctor(
         doctorId: string,
-        doctorInputDto: DoctorInputUpdateDto,
+        doctorInputDto: DoctorInputOptionalDto,
     ): Promise<InterlayerNotice> {
         const notice = new InterlayerNotice();
 
         const doctorInterlayer =
-            await this.doctorsService.findDoctorById(doctorId);
+            await this.doctorsService.getDoctorById(doctorId);
 
         if (doctorInterlayer.hasError()) {
             notice.addError('doctor was not found');
             return notice;
         }
         const userIdInterlayer =
-            await this.doctorsService.findUserIdByDoctorId(doctorId);
+            await this.doctorsService.getUserIdByDoctorId(doctorId);
 
         let passwordHash = null;
         if (doctorInputDto.password) {

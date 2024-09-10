@@ -25,7 +25,6 @@ export class AuthController {
     constructor(private authService: AuthService) {}
 
     @ApiOperation({ summary: 'Login' })
-    @ApiBearerAuth('Authorization Token')
     @Post('login')
     @ApiCreatedResponse({
         description: 'Access token',
@@ -40,6 +39,8 @@ export class AuthController {
         @Res({ passthrough: true }) response: Response,
     ): Promise<{ accessToken: string }> {
         const interlayerTokens = await this.authService.login(loginInputDto);
+        console.log('interlayerTokens');
+        console.log(interlayerTokens);
         if (interlayerTokens.hasError()) {
             throw new UnauthorizedException();
         }

@@ -5,8 +5,18 @@ import { UsersModel } from './models/users.model';
 import 'dotenv/config';
 import { DoctorsModel } from './models/doctors.model';
 import { RolesModel } from './models/roles.model';
+import { AppointmentsModel } from './models/appointments.model';
+import { PatientsModel } from './models/patients.model';
+import { DoctorsWorkScheduleModel } from './models/doctorsWorkSchedule.model';
 
-const models = [UsersModel, DoctorsModel, RolesModel];
+const models = [
+    UsersModel,
+    DoctorsModel,
+    RolesModel,
+    AppointmentsModel,
+    PatientsModel,
+    DoctorsWorkScheduleModel,
+];
 
 const modelProviders = models.map((model) => {
     return {

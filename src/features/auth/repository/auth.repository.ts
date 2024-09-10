@@ -12,7 +12,7 @@ export class AuthRepository {
         private readonly rolesModel: ModelClass<RolesModel>,
     ) {}
 
-    async findUserRole(roleId: string): Promise<string | null> {
+    async getUserRole(roleId: string): Promise<string | null> {
         const role = await this.rolesModel
             .query()
             .findOne({ id: roleId })
@@ -20,7 +20,7 @@ export class AuthRepository {
         return role.roleTitle;
     }
 
-    async findUserByLogin(login: string): Promise<UsersModel | null> {
+    async getUserByLogin(login: string): Promise<UsersModel | null> {
         const user: UsersModel = await this.usersModel.query().findOne({
             login: login,
             deletedAt: null,
@@ -29,7 +29,7 @@ export class AuthRepository {
         return user;
     }
 
-    async findUserById(userId: string): Promise<UsersModel | null> {
+    async getUserById(userId: string): Promise<UsersModel | null> {
         const user: UsersModel = await this.usersModel.query().findOne({
             id: userId,
             deletedAt: null,
@@ -38,7 +38,7 @@ export class AuthRepository {
         return user;
     }
 
-    async findUserByEmail(email: string): Promise<UsersModel | null> {
+    async getUserByEmail(email: string): Promise<UsersModel | null> {
         const user: UsersModel = await this.usersModel.query().findOne({
             email: email,
             deletedAt: null,

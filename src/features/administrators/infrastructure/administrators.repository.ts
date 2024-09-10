@@ -8,7 +8,7 @@ import { Knex } from 'knex';
 import { Role } from '../../../base/models/role.enum';
 import { DoctorInputDto } from '../../doctors/api/dto/input/doctor-input.dto';
 import { DoctorsViewDto } from '../../doctors/api/dto/output/doctors-view-dto';
-import { DoctorInputUpdateDto } from '../../doctors/api/dto/input/doctor-input-update.dto';
+import { DoctorInputOptionalDto } from '../../doctors/api/dto/input/doctor-input-optional.dto';
 import { Logger } from 'nestjs-pino';
 
 @Injectable()
@@ -86,7 +86,7 @@ export class AdministratorsRepository {
     }
 
     async updateDoctor(
-        doctorInputUpdateDto: DoctorInputUpdateDto,
+        doctorInputUpdateDto: DoctorInputOptionalDto,
         passwordHash: string,
         userId: string,
         doctorId: string,

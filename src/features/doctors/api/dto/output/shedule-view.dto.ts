@@ -5,8 +5,6 @@ export class ScheduleViewDto {
         example: '2024-09-04T05:40:55.083Z',
     })
     date: string;
-    @ApiProperty()
-    countAppointments: number;
     @ApiProperty({
         example: '2024-09-04T05:40:55.083Z',
     })

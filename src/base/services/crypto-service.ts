@@ -1,11 +1,12 @@
 import * as bcrypt from 'bcrypt';
 
 export class CryptoService {
-    async createPasswordHash(password: string, salt?: string): Promise<string> {
-        if (salt === undefined) {
-            salt = await bcrypt.genSalt(10);
-        }
+    private readonly DEFAULT_SALT = 10;
 
+    async createPasswordHash(
+        password: string,
+        salt: number = this.DEFAULT_SALT,
+    ): Promise<string> {
         return await bcrypt.hash(password, salt);
     }
 
