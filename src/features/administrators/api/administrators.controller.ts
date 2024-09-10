@@ -30,7 +30,7 @@ import { DoctorInputDto } from '../../doctors/api/dto/input/doctor-input.dto';
 import { AdministratorsService } from '../application/administrators.service';
 import { Logger } from 'nestjs-pino';
 import { DoctorsViewDto } from '../../doctors/api/dto/output/doctors-view-dto';
-import { DoctorInputUpdateDto } from '../../doctors/api/dto/input/doctor-input-update.dto';
+import { DoctorInputOptionalDto } from '../../doctors/api/dto/input/doctor-input-optional.dto';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth-guard';
 import { AccessTokenPayloadDto } from '../../../common/dto/access-token-payload.dto';
 import { Roles } from '../../../common/decorators/validate/roles.decorator';
@@ -103,6 +103,8 @@ export class AdministratorsController {
     @ApiForbiddenResponse({
         description: 'You do not have enough permissions',
     })
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Roles(Role.Administrator)
     @HttpCode(HttpStatus.NO_CONTENT)
     async removeDoctor(@Param('doctorId', ParseUUIDPipe) doctorId: string) {
         const removeDoctorInterlayer =
@@ -131,10 +133,12 @@ export class AdministratorsController {
     @ApiForbiddenResponse({
         description: 'You do not have enough permissions',
     })
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Roles(Role.Administrator)
     @HttpCode(HttpStatus.NO_CONTENT)
     async updateDoctor(
         @Param('doctorId') doctorId: string,
-        @Body() doctorInputDto: DoctorInputUpdateDto,
+        @Body() doctorInputDto: DoctorInputOptionalDto,
     ) {
         const updateDoctorInterLayer =
             await this.administratorsService.updateDoctor(

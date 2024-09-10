@@ -26,10 +26,10 @@ export class AuthService {
         const notice = new InterlayerNotice<TokensDto>();
 
         let user: UsersModel;
-        const userByLoginInterlayer = await this.authRepository.findUserByLogin(
+        const userByLoginInterlayer = await this.authRepository.getUserByLogin(
             loginInputDto.loginOrEmail,
         );
-        const userByEmailInterlayer = await this.authRepository.findUserByEmail(
+        const userByEmailInterlayer = await this.authRepository.getUserByEmail(
             loginInputDto.loginOrEmail,
         );
         if (!userByLoginInterlayer && !userByEmailInterlayer) {
@@ -49,9 +49,7 @@ export class AuthService {
             return notice;
         }
 
-        const roleInterlayer = await this.usersService.findUserRole(
-            user.roleId,
-        );
+        const roleInterlayer = await this.usersService.getUserRole(user.roleId);
 
         if (roleInterlayer.hasError()) {
             notice.addError(roleInterlayer.extensions[0].message);
