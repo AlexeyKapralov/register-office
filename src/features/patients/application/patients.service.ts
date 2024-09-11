@@ -24,8 +24,8 @@ export class PatientsService {
         datetimeOfAdmission: Date,
         doctorId: string,
         userId: string,
-    ): Promise<InterlayerNotice<AppointmentPatientViewDto | null>> {
-        const notice = new InterlayerNotice<AppointmentPatientViewDto | null>();
+    ): Promise<InterlayerNotice<AppointmentPatientViewDto>> {
+        const notice = new InterlayerNotice<AppointmentPatientViewDto>();
         const basicMinutesToAppointment = [30, 0];
 
         //корректное ли время
@@ -97,19 +97,15 @@ export class PatientsService {
             );
             return notice;
         }
-
         //записать
-        const makeAppointmentInterlayer: InterlayerNotice<AppointmentPatientViewDto | null> =
+        const makeAppointmentInterlayer: InterlayerNotice<AppointmentPatientViewDto> =
             await this.appointmentService.makeAppointment(
                 datetimeOfAdmission,
                 doctorId,
                 patient.id,
             );
-        if (
-            makeAppointmentInterlayer.hasError() ||
-            makeAppointmentInterlayer.data === null
-        ) {
-            notice.addError('appointment was not found');
+        if (makeAppointmentInterlayer.hasError()) {
+            notice.addError('appointment was not created');
             return notice;
         }
 

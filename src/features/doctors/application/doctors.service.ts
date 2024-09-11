@@ -495,13 +495,13 @@ export class DoctorsService {
             return notice;
         }
 
-        const isUpdatedWorkSchedule =
+        const isDeletedWorkSchedule =
             await this.doctorsRepository.deleteWorkSchedule(
                 doctor.id,
                 workDate,
                 trx,
             );
-        if (!isUpdatedWorkSchedule) {
+        if (!isDeletedWorkSchedule) {
             notice.addError(
                 'Work schedule was not deleted',
                 'doctor',

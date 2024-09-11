@@ -3,12 +3,16 @@ import { ModelClass } from 'objection';
 import { AppointmentsModel } from '../../../database/models/appointments.model';
 import { AppointmentsStatusEnum } from '../../../base/models/appointments-status.enum';
 import { Knex } from 'knex';
+import dayjs from 'dayjs';
+import { NotificationsModel } from '../../../database/models/notifications.model';
 
 @Injectable()
 export class AppointmentsRepository {
     constructor(
         @Inject('AppointmentsModel')
         private appointmentsModel: ModelClass<AppointmentsModel>,
+        @Inject('NotificationsModel')
+        private notificationsModel: ModelClass<NotificationsModel>,
         @Inject('KnexConnection') private readonly knex: Knex,
     ) {}
 
@@ -22,7 +26,7 @@ export class AppointmentsRepository {
             .andWhere('deletedAt', null)
             .andWhere('status', AppointmentsStatusEnum.Open)
             .andWhere('datetimeOfAdmission', '=', date)
-            .withGraphFetched('doctors');
+            .withGraphFetched('[doctors, patients]');
         if (appointments.length === 0) {
             return null;
         }
@@ -39,7 +43,7 @@ export class AppointmentsRepository {
                 deletedAt: null,
                 status: AppointmentsStatusEnum.Open,
             })
-            .withGraphFetched('doctors');
+            .withGraphFetched('[doctors, patients]');
         if (!appointment) {
             return null;
         }
@@ -58,7 +62,7 @@ export class AppointmentsRepository {
                 status: AppointmentsStatusEnum.Open,
                 patientId: patientId,
             })
-            .withGraphFetched('doctors');
+            .withGraphFetched('[doctors, patients]');
         if (!appointment) {
             return null;
         }
@@ -77,7 +81,7 @@ export class AppointmentsRepository {
             .andWhere('patientId', patientId)
             .andWhere('datetimeOfAdmission', '>=', startPeriod)
             .andWhere('datetimeOfAdmission', '<=', endPeriod)
-            .withGraphFetched('doctors');
+            .withGraphFetched('[doctors, patients]');
         if (!appointments) {
             return null;
         }
@@ -96,7 +100,7 @@ export class AppointmentsRepository {
             .andWhere('doctorId', doctorId)
             .andWhere('datetimeOfAdmission', '>=', startPeriod)
             .andWhere('datetimeOfAdmission', '<=', endPeriod)
-            .withGraphFetched('patients');
+            .withGraphFetched('[doctors, patients]');
         if (!appointments) {
             return null;
         }
@@ -121,7 +125,23 @@ export class AppointmentsRepository {
                     createdAt: new Date(),
                     deletedAt: null,
                 })
-                .withGraphFetched('[doctors, patients]');
+                .withGraphFetched('[doctors, patients]')
+                .returning('*');
+
+            const notificationForPatient = await this.notificationsModel
+                .query(trx)
+                .insert({
+                    userId: appointment[0].patients[0].userId,
+                    createdAt: new Date(),
+                    description: `Appointment on ${dayjs(appointment[0].datetimeOfAdmission).format('YYYY-MM-DD HH:mm:ss')} was created`,
+                });
+            const notificationForDoctor = await this.notificationsModel
+                .query(trx)
+                .insert({
+                    userId: appointment[0].doctors[0].userId,
+                    createdAt: new Date(),
+                    description: `Appointment on ${dayjs(appointment[0].datetimeOfAdmission).format('YYYY-MM-DD HH:mm:ss')} was created`,
+                });
 
             await trx.commit();
         } catch (error) {
@@ -142,11 +162,77 @@ export class AppointmentsRepository {
                 })
                 .update({
                     deletedAt: new Date(),
-                });
-            if (appointment === 0) {
+                })
+                .withGraphFetched('[doctors, patients]')
+                .returning('*');
+            if (appointment.length === 0) {
                 await trx.rollback();
                 return false;
             }
+            const notificationForPatient = await this.notificationsModel
+                .query(trx)
+                .insert({
+                    userId: appointment[0].patients[0].userId,
+                    createdAt: new Date(),
+                    description: `Appointment on ${dayjs(appointment[0].datetimeOfAdmission).format('YYYY-MM-DD HH:mm:ss')} was deleted`,
+                });
+            const notificationForDoctor = await this.notificationsModel
+                .query(trx)
+                .insert({
+                    userId: appointment[0].doctors[0].userId,
+                    createdAt: new Date(),
+                    description: `Appointment on ${dayjs(appointment[0].datetimeOfAdmission).format('YYYY-MM-DD HH:mm:ss')} was deleted`,
+                });
+            await trx.commit();
+        } catch (error) {
+            await trx.rollback();
+            return false;
+        }
+        return true;
+    }
+
+    async deleteAppointmentsByDayAndDoctorId(
+        doctorId: string,
+        date: Date,
+        trx: Knex.Transaction = null,
+    ): Promise<boolean> {
+        try {
+            const appointmentsCountDeleted = await this.appointmentsModel
+                .query(trx)
+                .where('doctorId', doctorId)
+                .andWhere('deletedAt', null)
+                .andWhere('status', AppointmentsStatusEnum.Open)
+                .andWhere(
+                    'datetimeOfAdmission',
+                    '>=',
+                    dayjs(date).startOf('day').toDate(),
+                )
+                .andWhere(
+                    'datetimeOfAdmission',
+                    '<=',
+                    dayjs(date).endOf('day').toDate(),
+                )
+                .update({
+                    deletedAt: new Date(),
+                })
+                .withGraphFetched('[doctors, patients]')
+                .returning('*');
+
+            const notificationForPatient = await this.notificationsModel
+                .query(trx)
+                .insert({
+                    userId: appointmentsCountDeleted[0].patients[0].userId,
+                    createdAt: new Date(),
+                    description: `Appointment on ${dayjs(appointmentsCountDeleted[0].datetimeOfAdmission).format('YYYY-MM-DD')} was deleted`,
+                });
+            const notificationForDoctor = await this.notificationsModel
+                .query(trx)
+                .insert({
+                    userId: appointmentsCountDeleted[0].doctors[0].userId,
+                    createdAt: new Date(),
+                    description: `Appointment on ${dayjs(appointmentsCountDeleted[0].datetimeOfAdmission).format('YYYY-MM-DD')} was deleted`,
+                });
+
             await trx.commit();
         } catch (error) {
             await trx.rollback();
@@ -177,11 +263,30 @@ export class AppointmentsRepository {
                     deletedAt: null,
                 })
                 .forUpdate()
-                .update(updateData);
-            if (appointmentUpdateCount === 0) {
+                .update(updateData)
+                .returning('*')
+                .withGraphFetched('[doctors, patients]');
+
+            if (appointmentUpdateCount.length === 0) {
                 await trx.rollback();
                 return false;
             }
+
+            const notificationForPatient = await this.notificationsModel
+                .query(trx)
+                .insert({
+                    userId: appointmentUpdateCount[0].patients[0].userId,
+                    createdAt: new Date(),
+                    description: `Appointment on ${dayjs(appointmentUpdateCount[0].datetimeOfAdmission).format('YYYY-MM-DD HH:mm:ss')} was updated`,
+                });
+            const notificationForDoctor = await this.notificationsModel
+                .query(trx)
+                .insert({
+                    userId: appointmentUpdateCount[0].doctors[0].userId,
+                    createdAt: new Date(),
+                    description: `Appointment on ${dayjs(appointmentUpdateCount[0].datetimeOfAdmission).format('YYYY-MM-DD HH:mm:ss')} was updated`,
+                });
+
             await trx.commit();
         } catch (error) {
             await trx.rollback();

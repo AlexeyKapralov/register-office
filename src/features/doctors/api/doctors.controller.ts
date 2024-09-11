@@ -54,6 +54,47 @@ import { SchedulePeriodInputDto } from './dto/input/schedule-period-input.dto';
 export class DoctorsController {
     constructor(private doctorsService: DoctorsService) {}
 
+    @ApiOperation({ summary: 'Get doctor appointments' })
+    @ApiBearerAuth('Authorization Token')
+    @Get('appointments')
+    @ApiOkResponse({
+        description: `Doctor's appointments`,
+        type: [AppointmentDoctorsViewDto],
+    })
+    @ApiBadRequestResponse({
+        type: ApiErrorResult,
+        description: 'If the inputModel has incorrect values',
+    })
+    @ApiUnauthorizedResponse({
+        description: 'Unauthorized',
+    })
+    @ApiForbiddenResponse({
+        description: 'Forbidden',
+    })
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Roles(Role.Doctor)
+    @HttpCode(HttpStatus.OK)
+    async getDoctorsAppointments(
+        @Query() appointmentsDateInputDto: AppointmentsDateInputDto,
+        @Req() req: any,
+    ) {
+        const accessTokenPayload: AccessTokenPayloadDto = req.user;
+        if (!accessTokenPayload.userId) {
+            throw new UnauthorizedException();
+        }
+
+        const appointmentsInterlayer =
+            await this.doctorsService.getAppointments(
+                appointmentsDateInputDto.startDate,
+                appointmentsDateInputDto.finishDate,
+                accessTokenPayload.userId,
+            );
+        if (appointmentsInterlayer.hasError()) {
+            throw new NotFoundException();
+        }
+        return appointmentsInterlayer.data;
+    }
+
     @ApiOperation({ summary: 'Get free slots for the doctor' })
     @ApiBearerAuth('Authorization Token')
     @Get('/free-slots/:doctorId')
@@ -204,47 +245,6 @@ export class DoctorsController {
         return !scheduleInterlayer.data ? [] : scheduleInterlayer.data;
     }
 
-    @ApiOperation({ summary: 'Get doctor appointments' })
-    @ApiBearerAuth('Authorization Token')
-    @Get('appointments')
-    @ApiOkResponse({
-        description: `Doctor's appointments`,
-        type: [AppointmentDoctorsViewDto],
-    })
-    @ApiBadRequestResponse({
-        type: ApiErrorResult,
-        description: 'If the inputModel has incorrect values',
-    })
-    @ApiUnauthorizedResponse({
-        description: 'Unauthorized',
-    })
-    @ApiForbiddenResponse({
-        description: 'Forbidden',
-    })
-    @UseGuards(JwtAuthGuard, RolesGuard)
-    @Roles(Role.Doctor)
-    @HttpCode(HttpStatus.OK)
-    async getDoctorsAppointments(
-        @Query() appointmentsDateInputDto: AppointmentsDateInputDto,
-        @Req() req: any,
-    ) {
-        const accessTokenPayload: AccessTokenPayloadDto = req.user;
-        if (!accessTokenPayload.userId) {
-            throw new UnauthorizedException();
-        }
-
-        const appointmentsInterlayer =
-            await this.doctorsService.getAppointments(
-                appointmentsDateInputDto.startDate,
-                appointmentsDateInputDto.finishDate,
-                accessTokenPayload.userId,
-            );
-        if (appointmentsInterlayer.hasError()) {
-            throw new NotFoundException();
-        }
-        return appointmentsInterlayer.data;
-    }
-
     @ApiOperation({ summary: 'Create schedule for day' })
     @ApiBearerAuth('Authorization Token')
     @Post('schedule-for-day/:doctorId')
@@ -350,18 +350,20 @@ export class DoctorsController {
                 scheduleDateInputDto.workDate,
             );
 
-        if (
-            deleteScheduleInterlayer.extensions[0].code ===
-            InterlayerStatuses.FORBIDDEN
-        ) {
-            throw new ForbiddenException();
-        }
+        if (deleteScheduleInterlayer.hasError()) {
+            if (
+                deleteScheduleInterlayer.extensions[0].code ===
+                InterlayerStatuses.FORBIDDEN
+            ) {
+                throw new ForbiddenException();
+            }
 
-        if (
-            deleteScheduleInterlayer.extensions[0].code ===
-            InterlayerStatuses.NOT_FOUND
-        ) {
-            throw new NotFoundException();
+            if (
+                deleteScheduleInterlayer.extensions[0].code ===
+                InterlayerStatuses.NOT_FOUND
+            ) {
+                throw new NotFoundException();
+            }
         }
     }
 }
