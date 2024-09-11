@@ -11,6 +11,4 @@ export class PatientViewDto {
     medicalPolicy: string;
     @ApiProperty()
     passport: string;
-    @ApiProperty()
-    phonNumber: string;
 }

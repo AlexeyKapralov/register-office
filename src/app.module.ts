@@ -9,6 +9,7 @@ import { DatabaseModule } from './database/database.module';
 import { UsersModule } from './features/users/user.module';
 import { AuthModule } from './features/auth/auth.module';
 import { PassportModule } from '@nestjs/passport';
+import { AppointmentsModule } from './features/appointments/appointments.module';
 
 @Global()
 @Module({
@@ -24,6 +25,7 @@ import { PassportModule } from '@nestjs/passport';
         PatientsModule,
         DoctorsModule,
         AdministratorsModule,
+        AppointmentsModule,
         UsersModule,
         AuthModule,
         DatabaseModule,
