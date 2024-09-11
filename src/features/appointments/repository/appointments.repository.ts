@@ -3,6 +3,7 @@ import { ModelClass } from 'objection';
 import { AppointmentsModel } from '../../../database/models/appointments.model';
 import { AppointmentsStatusEnum } from '../../../base/models/appointments-status.enum';
 import { Knex } from 'knex';
+import dayjs from 'dayjs';
 
 @Injectable()
 export class AppointmentsRepository {
@@ -147,6 +148,39 @@ export class AppointmentsRepository {
                 await trx.rollback();
                 return false;
             }
+            await trx.commit();
+        } catch (error) {
+            await trx.rollback();
+            return false;
+        }
+        return true;
+    }
+
+    async deleteAppointmentsByDayAndDoctorId(
+        doctorId: string,
+        date: Date,
+        trx: Knex.Transaction = null,
+    ): Promise<boolean> {
+        try {
+            const appointmentsCountDeleted = await this.appointmentsModel
+                .query(trx)
+                .where('doctorId', doctorId)
+                .andWhere('deletedAt', null)
+                .andWhere('status', AppointmentsStatusEnum.Open)
+                .andWhere(
+                    'datetimeOfAdmission',
+                    '>=',
+                    dayjs(date).startOf('day').toDate(),
+                )
+                .andWhere(
+                    'datetimeOfAdmission',
+                    '<=',
+                    dayjs(date).endOf('day').toDate(),
+                )
+                .update({
+                    deletedAt: new Date(),
+                });
+
             await trx.commit();
         } catch (error) {
             await trx.rollback();

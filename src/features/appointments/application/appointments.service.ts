@@ -5,7 +5,7 @@ import {
     InterlayerStatuses,
 } from '../../../base/models/interlayer';
 import { AppointmentPatientViewDto } from '../../patients/api/dto/output/appointment-patient-view.dto';
-import { DoctorsService } from '../../doctors/application/doctors.service';
+import { Knex } from 'knex';
 import { appointmentDoctorViewMapper } from '../../../base/mappers/appointment-doctor-view.mapper';
 import { appointmentPatientViewMapper } from '../../../base/mappers/appointment-patient-view.mapper';
 import { AppointmentDoctorsViewDto } from '../../doctors/api/dto/output/appointment-doctors-view.dto';
@@ -170,6 +170,27 @@ export class AppointmentsService {
             await this.appointmentsRepository.deleteAppointment(appointmentId);
         if (!isAppointmentDeleted) {
             notice.addError('appointment was not deleted');
+            return notice;
+        }
+
+        return notice;
+    }
+
+    async deleteAppointmentsByDateAndDoctor(
+        doctorId: string,
+        date: Date,
+        trx: Knex.Transaction = null,
+    ): Promise<InterlayerNotice> {
+        const notice = new InterlayerNotice();
+
+        const isAppointmentsDeleted =
+            await this.appointmentsRepository.deleteAppointmentsByDayAndDoctorId(
+                doctorId,
+                date,
+                trx,
+            );
+        if (!isAppointmentsDeleted) {
+            notice.addError('appointments was not deleted');
             return notice;
         }
 

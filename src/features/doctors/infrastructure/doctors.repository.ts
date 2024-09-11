@@ -1,13 +1,13 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { DoctorsModel } from '../../../database/models/doctors.model';
-import { ModelClass, transaction } from 'objection';
+import { ModelClass } from 'objection';
 import { DoctorInputDto } from '../api/dto/input/doctor-input.dto';
-import knex, { Knex } from 'knex';
+import { Knex } from 'knex';
 import { DoctorsWorkScheduleModel } from '../../../database/models/doctorsWorkSchedule.model';
 import dayjs from 'dayjs';
-import { FreeSlotsDoctorQueryDto } from '../api/dto/input/free-slots-doctor-query.dto';
 import { AppointmentsModel } from '../../../database/models/appointments.model';
 import { AppointmentsStatusEnum } from '../../../base/models/appointments-status.enum';
+import { AppointmentsService } from '../../appointments/application/appointments.service';
 
 @Injectable()
 export class DoctorsRepository {
@@ -17,6 +17,7 @@ export class DoctorsRepository {
         private doctorsWorkScheduleModel: ModelClass<DoctorsWorkScheduleModel>,
         @Inject('AppointmentsModel')
         private appointmentsModel: ModelClass<AppointmentsModel>,
+        private appointmentsService: AppointmentsService,
         @Inject('KnexConnection') private readonly knex: Knex,
     ) {}
 
@@ -223,7 +224,7 @@ export class DoctorsRepository {
         }
 
         try {
-            const user = await this.doctorsWorkScheduleModel
+            const userCountDeleted = await this.doctorsWorkScheduleModel
                 .query(workingTrx)
                 .where({
                     doctorId: doctorId,
@@ -236,11 +237,18 @@ export class DoctorsRepository {
                     deletedAt: new Date(),
                 });
 
-            if (!trx) {
+            const appointmentsInterlayer =
+                await this.appointmentsService.deleteAppointmentsByDateAndDoctor(
+                    doctorId,
+                    workDate,
+                    workingTrx,
+                );
+
+            if (!trx && userCountDeleted === 1) {
                 await workingTrx.commit(); // Коммитим, если это была создана новая транзакция
             }
-            return user === 1;
-        } catch {
+            return userCountDeleted === 1;
+        } catch (error) {
             if (!trx) {
                 await workingTrx.rollback(); // Откат, если была создана новая транзакция
             }
