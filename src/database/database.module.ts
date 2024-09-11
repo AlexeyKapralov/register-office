@@ -8,6 +8,7 @@ import { RolesModel } from './models/roles.model';
 import { AppointmentsModel } from './models/appointments.model';
 import { PatientsModel } from './models/patients.model';
 import { DoctorsWorkScheduleModel } from './models/doctorsWorkSchedule.model';
+import { NotificationsModel } from './models/notifications.model';
 
 const models = [
     UsersModel,
@@ -16,6 +17,7 @@ const models = [
     AppointmentsModel,
     PatientsModel,
     DoctorsWorkScheduleModel,
+    NotificationsModel,
 ];
 
 const modelProviders = models.map((model) => {

@@ -124,14 +124,14 @@ export class PatientsController {
         if (!accessTokenPayload.userId) {
             throw new UnauthorizedException();
         }
-
         const appointmentInterlayer =
             await this.patientsService.createAppointment(
                 appointmentInputDto.datetimeOfAdmission,
                 appointmentInputDto.doctorId,
                 accessTokenPayload.userId,
             );
-        if (appointmentInterlayer.hasError() || !appointmentInterlayer.data) {
+
+        if (appointmentInterlayer.hasError()) {
             throw new NotFoundException();
         }
         return appointmentInterlayer.data;

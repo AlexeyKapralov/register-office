@@ -80,9 +80,8 @@ export class AppointmentsService {
         datetimeOfAdmission: Date,
         doctorId: string,
         patientId: string,
-    ): Promise<InterlayerNotice<AppointmentPatientDoctorViewDto | null>> {
-        const notice =
-            new InterlayerNotice<AppointmentPatientDoctorViewDto | null>();
+    ): Promise<InterlayerNotice<AppointmentPatientDoctorViewDto>> {
+        const notice = new InterlayerNotice<AppointmentPatientDoctorViewDto>();
 
         const appointment = await this.appointmentsRepository.makeAppointment(
             datetimeOfAdmission,
