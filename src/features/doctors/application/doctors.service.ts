@@ -20,13 +20,17 @@ import { AppointmentsModel } from '../../../database/models/appointments.model';
 import utc from 'dayjs/plugin/utc';
 import { SchedulePeriodInputDto } from '../api/dto/input/schedule-period-input.dto';
 import { ScheduleViewDto } from '../api/dto/output/shedule-view.dto';
-import { ApiProperty } from '@nestjs/swagger';
+import { AppointmentsService } from '../../appointments/application/appointments.service';
+import { AppointmentDoctorsViewDto } from '../api/dto/output/appointment-doctors-view.dto';
 
 dayjs.extend(utc);
 
 @Injectable()
 export class DoctorsService {
-    constructor(private doctorsRepository: DoctorsRepository) {}
+    constructor(
+        private doctorsRepository: DoctorsRepository,
+        private appointmentsService: AppointmentsService,
+    ) {}
 
     async getDoctorById(
         doctorId: string,
@@ -106,6 +110,49 @@ export class DoctorsService {
             return notice;
         }
         notice.addData(doctorViewMapper(doctor));
+        return notice;
+    }
+
+    async getAppointments(
+        startPeriod: Date,
+        endPeriod: Date,
+        userId: string,
+    ): Promise<InterlayerNotice<AppointmentDoctorsViewDto[]>> {
+        const notice = new InterlayerNotice<AppointmentDoctorsViewDto[]>();
+
+        const date1 = dayjs(startPeriod);
+        const date2 = dayjs(endPeriod);
+        const countDaysBetweenDates = date2
+            .startOf('day')
+            .diff(date1.startOf('day'), 'day');
+        if (countDaysBetweenDates > 30) {
+            notice.addError(
+                'It is more than 30 days in current period',
+                '',
+                InterlayerStatuses.BAD_REQUEST,
+            );
+            return notice;
+        }
+
+        const doctor = await this.doctorsRepository.getDoctorByUserId(userId);
+        if (!doctor) {
+            notice.addError('doctor was not found');
+            return notice;
+        }
+
+        const appointmentsInterlayer =
+            await this.appointmentsService.getAppointmentsForDoctors(
+                startPeriod,
+                endPeriod,
+                doctor.id,
+            );
+        if (appointmentsInterlayer.hasError()) {
+            const { message, key, code } = appointmentsInterlayer.extensions[0];
+            notice.addError(message, key, code);
+            return notice;
+        }
+
+        notice.addData(appointmentsInterlayer.data);
         return notice;
     }
 
@@ -244,6 +291,37 @@ export class DoctorsService {
         return notice;
     }
 
+    async getScheduleForDay(
+        doctorId: string,
+        date: Date,
+    ): Promise<InterlayerNotice<ScheduleViewDto>> {
+        const notice = new InterlayerNotice<ScheduleViewDto>();
+        const doctor = await this.doctorsRepository.getDoctorById(doctorId);
+        if (!doctor) {
+            notice.addError('doctor was not found');
+            return notice;
+        }
+
+        const doctorSchedule = await this.doctorsRepository.getScheduleByPeriod(
+            doctorId,
+            dayjs(date).startOf('day').toDate(),
+            dayjs(date).endOf('day').toDate(),
+        );
+        if (!doctorSchedule) {
+            notice.addError('schedule was not found');
+            return notice;
+        }
+
+        const schedule: ScheduleViewDto = {
+            date: new Date(doctorSchedule[0].workDate).toISOString(),
+            startWorkTime: doctorSchedule[0].startWorkTime.toISOString(),
+            endWorkTime: doctorSchedule[0].endWorkTime.toISOString(),
+        };
+
+        notice.addData(schedule);
+        return notice;
+    }
+
     async updateDoctor(
         doctorId: string,
         firstname: string = null,
@@ -275,19 +353,6 @@ export class DoctorsService {
 
         return notice;
     }
-
-    // async checkDoctorFreeSlots(
-    //     doctorId: string,
-    //     datetimeOfAdmission: Date,
-    // ): Promise<InterlayerNotice> {
-    //     const notice = new InterlayerNotice();
-    //
-    //     dayjs().format();
-    //     // const isDoctorWork = await this.doctorsRepository.() {}
-    //     // const isDoctorFree() {}
-    //
-    //     return notice;
-    // }
 
     async createScheduleForDay(
         doctorId: string,
