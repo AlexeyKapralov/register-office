@@ -168,56 +168,6 @@ export class DoctorsController {
         return doctorInterlayer.data;
     }
 
-    @ApiOperation({ summary: 'Get appointments' })
-    @ApiBearerAuth('Authorization Token')
-    @Get('appointments')
-    @ApiOkResponse({
-        description: `Doctor's appointments`,
-        type: [AppointmentDoctorsViewDto],
-    })
-    @ApiBadRequestResponse({
-        type: ApiErrorResult,
-        description: 'If the inputModel has incorrect values',
-    })
-    @ApiUnauthorizedResponse({
-        description: 'Unauthorized',
-    })
-    @ApiForbiddenResponse({
-        description: 'Forbidden',
-    })
-    getAppointments(
-        @Query() appointmentsDateInputDto: AppointmentsDateInputDto,
-    ) {
-        return [
-            {
-                appointmentId: '550e8400-e29b-41d4-a716-446655440000',
-                datetimeOfAdmission: '2024-04-2908:00:00.000Z',
-                patient: {
-                    name: 'Ivan Ivanov',
-                    dob: '1992-04-27T9:30:00.000Z',
-                    city: 'Balashikha',
-                    medicalPolicy: '1234567890111234',
-                    passport: '4601729721',
-                    phoneNumber: '+7-965-125-55-82',
-                },
-                createdAt: '2024-04-27T9:30:00.000Z',
-            },
-            {
-                appointmentId: '650e8400-e29b-41d4-a716-446655440000',
-                datetimeOfAdmission: '2024-04-2908:30:00.000Z',
-                patient: {
-                    name: 'Nikolay Ivanov',
-                    dob: '1992-04-27T9:30:00.000Z',
-                    city: 'Pushkino',
-                    medicalPolicy: '1234567890111234',
-                    passport: '4601729721',
-                    phoneNumber: '+7-965-125-55-82',
-                },
-                createdAt: '2024-04-27T18:30:00.000Z',
-            },
-        ];
-    }
-
     @ApiOperation({ summary: 'Get schedule for period' })
     @ApiBearerAuth('Authorization Token')
     @Get('schedule-for-day/:doctorId')
@@ -252,21 +202,47 @@ export class DoctorsController {
         }
 
         return !scheduleInterlayer.data ? [] : scheduleInterlayer.data;
+    }
 
-        // return [
-        //     {
-        //         date: '2024-04-29T08:00:00.000Z',
-        //         countAppointments: 3,
-        //         startWorkTime: '2024-04-29T9:30:00.000Z',
-        //         endWorkTime: '2024-04-29T19:00:00.000Z',
-        //     },
-        //     {
-        //         date: '2024-04-28T08:00:00.000Z',
-        //         countAppointments: 5,
-        //         startWorkTime: '2024-04-28T9:30:00.000Z',
-        //         endWorkTime: '2024-04-28T13:00:00.000Z',
-        //     },
-        // ];
+    @ApiOperation({ summary: 'Get doctor appointments' })
+    @ApiBearerAuth('Authorization Token')
+    @Get('appointments')
+    @ApiOkResponse({
+        description: `Doctor's appointments`,
+        type: [AppointmentDoctorsViewDto],
+    })
+    @ApiBadRequestResponse({
+        type: ApiErrorResult,
+        description: 'If the inputModel has incorrect values',
+    })
+    @ApiUnauthorizedResponse({
+        description: 'Unauthorized',
+    })
+    @ApiForbiddenResponse({
+        description: 'Forbidden',
+    })
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Roles(Role.Doctor)
+    @HttpCode(HttpStatus.OK)
+    async getDoctorsAppointments(
+        @Query() appointmentsDateInputDto: AppointmentsDateInputDto,
+        @Req() req: any,
+    ) {
+        const accessTokenPayload: AccessTokenPayloadDto = req.user;
+        if (!accessTokenPayload.userId) {
+            throw new UnauthorizedException();
+        }
+
+        const appointmentsInterlayer =
+            await this.doctorsService.getAppointments(
+                appointmentsDateInputDto.startDate,
+                appointmentsDateInputDto.finishDate,
+                accessTokenPayload.userId,
+            );
+        if (appointmentsInterlayer.hasError()) {
+            throw new NotFoundException();
+        }
+        return appointmentsInterlayer.data;
     }
 
     @ApiOperation({ summary: 'Create schedule for day' })
