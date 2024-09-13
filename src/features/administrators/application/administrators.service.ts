@@ -4,14 +4,12 @@ import { DoctorInputDto } from '../../doctors/api/dto/input/doctor-input.dto';
 import { CryptoService } from '../../../base/services/crypto-service';
 import { DoctorsViewDto } from '../../doctors/api/dto/output/doctors-view-dto';
 import { InterlayerNotice } from '../../../base/models/interlayer';
-import { UsersService } from '../../users/application/users.service';
 import { DoctorsService } from '../../doctors/application/doctors.service';
 import { DoctorInputOptionalDto } from '../../doctors/api/dto/input/doctor-input-optional.dto';
 
 @Injectable()
 export class AdministratorsService {
     constructor(
-        private usersService: UsersService,
         private cryptoService: CryptoService,
         private doctorsService: DoctorsService,
         private administratorsRepository: AdministratorsRepository,
