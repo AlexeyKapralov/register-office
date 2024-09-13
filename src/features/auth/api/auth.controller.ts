@@ -9,7 +9,6 @@ import {
 } from '@nestjs/common';
 import { LoginInputDto } from './dto/input/login-input.dto';
 import {
-    ApiBearerAuth,
     ApiCreatedResponse,
     ApiOperation,
     ApiTags,
@@ -39,8 +38,6 @@ export class AuthController {
         @Res({ passthrough: true }) response: Response,
     ): Promise<{ accessToken: string }> {
         const interlayerTokens = await this.authService.login(loginInputDto);
-        console.log('interlayerTokens');
-        console.log(interlayerTokens);
         if (interlayerTokens.hasError()) {
             throw new UnauthorizedException();
         }

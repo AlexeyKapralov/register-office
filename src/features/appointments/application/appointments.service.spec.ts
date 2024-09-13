@@ -263,7 +263,6 @@ describe('AppointmentsService unit tests', () => {
             datetimeOfAdmission,
             doctorId,
         );
-        console.log(result);
         expect(result.hasError()).toBeFalsy();
     });
 
