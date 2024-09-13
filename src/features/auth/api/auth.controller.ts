@@ -9,7 +9,6 @@ import {
 } from '@nestjs/common';
 import { LoginInputDto } from './dto/input/login-input.dto';
 import {
-    ApiBearerAuth,
     ApiCreatedResponse,
     ApiOperation,
     ApiTags,
