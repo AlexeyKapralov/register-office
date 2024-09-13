@@ -13,8 +13,6 @@ import { DoctorsFreeSlotsViewDto } from '../api/dto/output/doctors-free-slots-vi
 import { DoctorsWorkScheduleModel } from '../../../database/models/doctorsWorkSchedule.model';
 import { AppointmentsModel } from '../../../database/models/appointments.model';
 import { FreeSlotsDoctorQueryDto } from '../api/dto/input/free-slots-doctor-query.dto';
-import { ApiProperty } from '@nestjs/swagger';
-import { SlotsInfoViewDto } from '../../patients/api/dto/output/slots-info-view.dto';
 import { SchedulePeriodInputDto } from '../api/dto/input/schedule-period-input.dto';
 import { ScheduleViewDto } from '../api/dto/output/shedule-view.dto';
 import dayjs from 'dayjs';
@@ -329,7 +327,6 @@ describe('Doctors service unit tests', () => {
             finishDate,
             null,
         );
-        console.log(result);
         expect(result.hasError()).toBeFalsy();
     });
 
